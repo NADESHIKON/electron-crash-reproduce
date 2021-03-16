@@ -1,6 +1,10 @@
-// This file is required by the index.html file and will
-// be executed in the renderer process for that window.
-// No Node.js APIs are available in this process because
-// `nodeIntegration` is turned off. Use `preload.js` to
-// selectively enable features needed in the rendering
-// process.
+const element = document.createElement('embed');
+element.type = "application/x-mpvjs";
+const path = require("path");
+
+document.body.append(element)
+
+const { MpvJs } = require('mpv.js-vanilla'), mpv = new MpvJs(mpv => {
+    mpv.property("hwdec", "auto");
+    mpv.command("loadfile", path.join(__dirname, "tos.mkv"));
+});

@@ -1,6 +1,35 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow} = require('electron')
 const path = require('path')
+const { getPluginEntry } = require("mpv.js-vanilla");
+
+const RESOURCES_PATH = path.join(__dirname, './libraries');
+
+let os;
+
+switch (process.platform) {
+  case 'darwin':
+    os = 'mac';
+    break;
+  case 'win32':
+    os = 'win';
+    break;
+}
+
+const pluginDir = path.join(RESOURCES_PATH, 'mpv', os);
+
+console.log(pluginDir)
+app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
+
+// Fix for latest Electron.
+app.commandLine.appendSwitch('no-sandbox');
+// To support a broader number of systems.
+app.commandLine.appendSwitch('ignore-gpu-blacklist');
+
+app.commandLine.appendSwitch(
+    'register-pepper-plugins',
+    getPluginEntry(pluginDir)
+);
 
 function createWindow () {
   // Create the browser window.
@@ -8,7 +37,12 @@ function createWindow () {
     width: 800,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
+      nodeIntegration: true,
+      plugins: true,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true,
+      contextIsolation: false,
+      worldSafeExecuteJavaScript: false
     }
   })
 
@@ -24,7 +58,7 @@ function createWindow () {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   createWindow()
-  
+
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
